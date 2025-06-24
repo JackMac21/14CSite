@@ -1,0 +1,11 @@
+Package: myshinyapp
+Type: ShinyApp
+Title: 14C DApp
+Version: 0.1.0
+Imports:
+  shiny,
+  DT,
+  leaflet,
+  ggplot2,
+  dplyr
+
