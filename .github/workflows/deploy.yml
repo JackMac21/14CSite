@@ -16,12 +16,27 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: '4.2.1'  # ✅ Use R 4.2.1
+          r-version: '4.2.1'
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libpng-dev \
+            libssl-dev \
+            libxml2-dev \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libjpeg-dev \
+            libtiff5-dev \
+            libgdal-dev \
+            libgeos-dev \
+            libproj-dev
 
-      - name: Install R packages (explicitly including leaflet)
+      - name: Install R packages
         run: |
           Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')"
           Rscript -e "install.packages(c('shiny', 'DT', 'leaflet', 'ggplot2', 'dplyr', 'rsconnect'), repos='https://cloud.r-project.org')"
