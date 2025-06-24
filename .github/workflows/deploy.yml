@@ -18,21 +18,16 @@ jobs:
         with:
           r-version: '4.2.1'
 
-      # Install system dependencies for curl
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
 
-      - name: Install remotes package
-        run: Rscript -e 'install.packages("remotes", repos="https://cloud.r-project.org"); remotes::install_deps(dependencies = TRUE)'
+      # Install remotes and explicitly install all needed packages (including leaflet)
+      - name: Ensure required R packages are installed
+        run: |
+          Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')"
+          Rscript -e "install.packages(c('shiny', 'DT', 'leaflet', 'ggplot2', 'dplyr', 'rsconnect'), repos='https://cloud.r-project.org')"
 
-      # Install dependencies from DESCRIPTION
-      - name: Install R package dependencies
-        run: Rscript -e 'remotes::install_deps(dependencies = TRUE)'
-
-      # Install rsconnect AFTER system dependencies are in place
-      - name: Install rsconnect
-        run: Rscript -e 'install.packages("rsconnect", repos="https://cloud.r-project.org")'
-
+      # Deploy to shinyapps.io
       - name: Deploy to shinyapps.io
         env:
           SHINYAPPS_NAME: ${{ secrets.SHINYAPPS_NAME }}
