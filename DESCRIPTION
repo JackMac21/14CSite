@@ -1,6 +1,6 @@
 Package: myshinyapp
 Type: ShinyApp
-Title: 14C DApp
+Title: 14C-App
 Version: 0.1.0
 Imports:
   shiny,
