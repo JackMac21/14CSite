@@ -1,32 +1,30 @@
-name: Deploy Shiny App
+name: Deploy Shiny App to shinyapps.io
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.2.1'  # ✅ Use R 4.2.1
 
       - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libcurl4-openssl-dev libssl-dev libxml2-dev \
-            libpng-dev libv8-dev libgdal-dev libgeos-dev gdal-bin
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
 
-      - name: Install R dependencies
+      - name: Install R packages (explicitly including leaflet)
         run: |
-          Rscript -e 'install.packages("remotes", repos="https://cloud.r-project.org")'
-          Rscript -e 'remotes::install_deps(dependencies = TRUE)'
-
-      - name: Install rsconnect
-        run: Rscript -e 'install.packages("rsconnect", repos="https://cloud.r-project.org")'
+          Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')"
+          Rscript -e "install.packages(c('shiny', 'DT', 'leaflet', 'ggplot2', 'dplyr', 'rsconnect'), repos='https://cloud.r-project.org')"
 
       - name: Deploy to shinyapps.io
         env:
@@ -35,6 +33,7 @@ jobs:
           SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
         run: |
           Rscript -e "rsconnect::setAccountInfo(name='${SHINYAPPS_NAME}', token='${SHINYAPPS_TOKEN}', secret='${SHINYAPPS_SECRET}')"
-          Rscript -e "rsconnect::deployApp(appDir='.', appName='14C-App', forceUpdate=TRUE)"
+          Rscript -e "rsconnect::deployApp(appDir='.', appName='14C-App', forceUpdate = TRUE)"
+
 
 
