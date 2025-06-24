@@ -3,10 +3,9 @@ library(DT)
 library(leaflet)
 library(ggplot2)
 library(dplyr)
-library(rsconnect)
 
 # Load and clean data
-data_raw <- read.csv("Annual_14C_Database - 14C Database.csv", stringsAsFactors = FALSE)
+data_raw <- read.csv("Annual_14C_Database.csv", stringsAsFactors = FALSE)
 
 data_raw <- data_raw %>%
   mutate(
