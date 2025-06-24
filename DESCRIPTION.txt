@@ -1,4 +1,8 @@
 Type: Shiny
-Title: Example App
+Title: 14C-App
+Description: A sample shiny application
+Author: JackMac21
+License: MIT
+Encoding: UTF-8
 Imports:
-  shiny
+    shiny
