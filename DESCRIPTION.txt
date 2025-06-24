@@ -1,0 +1,4 @@
+Type: Shiny
+Title: Example App
+Imports:
+  shiny
