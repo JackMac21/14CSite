@@ -207,7 +207,7 @@ server <- function(input, output, session) {
       labs(
         x = "Dated Year (jittered)",
         y = "Age-Corrected Δ14C",
-        title = "Δ14C Plot with Optional Error Bars"
+        title = "Δ14C Over Time"
       )
     
     if (isTRUE(input$show_errors)) {
