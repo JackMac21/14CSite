@@ -17,7 +17,7 @@ data_raw <- data_raw %>%
   )
 
 ui <- fluidPage(
-  titlePanel("14C Data"),
+  titlePanel("Annual 14C Data from Tree Rings"),
   
   sidebarLayout(
     sidebarPanel(
@@ -206,8 +206,8 @@ server <- function(input, output, session) {
       theme_minimal() +
       labs(
         x = "Dated Year (jittered)",
-        y = "Age-Corrected Δ14C",
-        title = "Δ14C Over Time"
+        y = "Age-Corrected Δ14C of Tree Ring",
+        title = "Tree Ring Δ14C Levels Over Time"
       )
     
     if (isTRUE(input$show_errors)) {
