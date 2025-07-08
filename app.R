@@ -4,8 +4,21 @@ library(leaflet)
 library(ggplot2)
 library(dplyr)
 
-# Load and clean data
 data_raw <- read.csv("Annual_14C_Database_V2.csv", stringsAsFactors = FALSE)
+Intcal20Curve <- read.csv("Intcal20Curve.csv", stringsAsFactors = FALSE)
+SHcal20Curve <- read.csv("SHcal20Curve.csv", stringsAsFactors = FALSE)
+
+Intcal20Curve <- Intcal20Curve %>%
+  mutate(
+    CAL_BP = suppressWarnings(as.numeric(CAL_BP)),
+    Year = ifelse(!is.na(CAL_BP), 1950 - CAL_BP, Year)
+  )
+
+SHcal20Curve <- SHcal20Curve %>%
+  mutate(
+    CAL_BP = suppressWarnings(as.numeric(CAL_BP)),
+    Year = ifelse(!is.na(CAL_BP), 1950 - CAL_BP, Year)
+  )
 
 data_raw <- data_raw %>%
   mutate(
@@ -55,6 +68,10 @@ ui <- fluidPage(
         ),
         
         checkboxInput("show_errors", "Show Error Bars", TRUE),
+        
+        checkboxInput("show_nh_curve", "Show IntCal20 Curve", FALSE),
+        
+        checkboxInput("show_sh_curve", "Show SHCal20 Curve", FALSE),
         
         br(),
         
@@ -229,7 +246,16 @@ server <- function(input, output, session) {
     set.seed(123)
     df$Jittered_Year <- jitter(df$Dated_Year, amount = 0.3)
     
-    p <- ggplot(df, aes(x = Jittered_Year, y = Age_Corrected_D14C)) +
+    min_year <- min(df$Dated_Year, na.rm = TRUE)
+    max_year <- max(df$Dated_Year, na.rm = TRUE)
+    
+    Intcal20Curve_Filtered <- Intcal20Curve %>%
+      filter(Year >= min_year, Year <= max_year)
+    
+    SHcal20Curve_Filtered <- SHcal20Curve %>%
+      filter(Year >= min_year, Year <= max_year)
+    
+    plot <- ggplot(df, aes(x = Jittered_Year, y = Age_Corrected_D14C)) +
       geom_point(alpha = 0.6, color = "darkblue", size = 2) +
       theme_minimal() +
       labs(
@@ -239,15 +265,23 @@ server <- function(input, output, session) {
       )
     
     if (isTRUE(input$show_errors)) {
-      p <- p + geom_errorbar(
+      plot <- plot + geom_errorbar(
         aes(ymin = Age_Corrected_D14C - Age_Corrected_D14C_Error,
             ymax = Age_Corrected_D14C + Age_Corrected_D14C_Error),
         width = 0.1, color = "darkblue", alpha = 0.4
       )
     }
-    
-    p
-  })
+    if (isTRUE(input$show_nh_curve) && nrow(Intcal20Curve_Filtered) > 1) {
+      plot <- plot + geom_line(data = Intcal20Curve_Filtered, aes(x = Year, y = Delta_14C),
+                         color = "red", linewidth = 0.5)
+    }
+    if (isTRUE(input$show_sh_curve) && nrow(SHcal20Curve_Filtered) > 1) {
+      plot <- plot + geom_line(data = SHcal20Curve_Filtered, aes(x = Year, y = Delta_14C),
+                         color = "green", linewidth = 0.5)
+    }
+    plot
+    }
+  )
   
   output$download_data <- downloadHandler(
     filename = function() {
