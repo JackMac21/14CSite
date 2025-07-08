@@ -5,11 +5,11 @@ library(ggplot2)
 library(dplyr)
 
 # Load and clean data
-data_raw <- read.csv("Annual_14C_Database.csv", stringsAsFactors = FALSE)
+data_raw <- read.csv("Annual_14C_Database_V2.csv", stringsAsFactors = FALSE)
 
 data_raw <- data_raw %>%
   mutate(
-    Dated_Year = suppressWarnings(as.numeric(gsub("[^0-9\\-]", "", Dated_Year))),
+    Dated_Year = suppressWarnings(as.numeric(gsub("[^0-9\\.-]", "", Dated_Year))),
     Age_Corrected_D14C_Error = suppressWarnings(as.numeric(Age_Corrected_D14C_Error)),
     Age_Corrected_D14C = suppressWarnings(as.numeric(Age_Corrected_D14C)),
     Latitude = suppressWarnings(as.numeric(Latitude)),
@@ -17,55 +17,76 @@ data_raw <- data_raw %>%
   )
 
 ui <- fluidPage(
-  titlePanel("Annual 14C Data from Tree Rings"),
+  titlePanel("14C Data"),
   
-  sidebarLayout(
-    sidebarPanel(
-      checkboxInput("use_ew", "Filter by EW_LW_WW", FALSE),
-      conditionalPanel(
-        condition = "input.use_ew == true",
-        uiOutput("ew_ui")
-      ),
-      
-      checkboxInput("use_country", "Filter by Country", FALSE),
-      conditionalPanel(
-        condition = "input.use_country == true",
-        uiOutput("country_ui")
-      ),
-      
-      checkboxInput("use_authors", "Filter by Authors", FALSE),
-      conditionalPanel(
-        condition = "input.use_authors == true",
-        uiOutput("authors_ui")
-      ),
-      
-      checkboxInput("use_year", "Filter by Year Range", FALSE),
-      conditionalPanel(
-        condition = "input.use_year == true",
-        uiOutput("year_ui")
-      ),
-      
-      checkboxInput("use_latlon", "Filter by Latitude/Longitude", FALSE),
-      conditionalPanel(
-        condition = "input.use_latlon == true",
-        uiOutput("lat_ui"),
-        uiOutput("lon_ui")
-      ),
-      
-      checkboxInput("show_errors", "Show Error Bars", TRUE),
-      
-      br(),
-      actionButton("reset_filters", "Reset Filters"),
-      br(), br(),
-      downloadButton("download_data", "Download Filtered Data (CSV)")
+  fluidRow(
+    column(
+      width = 4,
+      wellPanel(
+        checkboxInput("use_year", "Filter by Year Range", FALSE),
+        conditionalPanel(
+          condition = "input.use_year == true",
+          uiOutput("year_ui")
+        ),
+        
+        checkboxInput("use_country", "Filter by Country", FALSE),
+        conditionalPanel(
+          condition = "input.use_country == true",
+          uiOutput("country_ui")
+        ),
+        
+        checkboxInput("use_latlon", "Filter by Latitude/Longitude", FALSE),
+        conditionalPanel(
+          condition = "input.use_latlon == true",
+          uiOutput("lat_ui"),
+          uiOutput("lon_ui")
+        ),
+        
+        checkboxInput("use_authors", "Filter by Authors", FALSE),
+        conditionalPanel(
+          condition = "input.use_authors == true",
+          uiOutput("authors_ui")
+        ),
+        
+        checkboxInput("use_ew", "Filter by EW_LW_WW", FALSE),
+        conditionalPanel(
+          condition = "input.use_ew == true",
+          uiOutput("ew_ui")
+        ),
+        
+        checkboxInput("show_errors", "Show Error Bars", TRUE),
+        
+        br(),
+        
+        actionButton("reset_filters", "Reset Filters", 
+                     class = "btn-sm", style = "width: 100%; margin-bottom: 10px;"),
+        downloadButton("download_data", "Download Filtered Data (CSV)", 
+                       class = "btn-sm", style = "width: 100%;")
+      )
     ),
-    
-    mainPanel(
-      plotOutput("year_plot", height = 400),
-      br(),
-      leafletOutput("map", height = 600),
-      br(),
-      DTOutput("table")
+    column(
+      width = 8,
+      plotOutput("year_plot", height = 400)
+    )
+  ),
+  
+  br(),
+  
+  fluidRow(
+    column(
+      width = 12,
+      div(style = "padding: 0px 20px;",
+          leafletOutput("map", height = 600))
+    )
+  ),
+  
+  br(),
+  
+  fluidRow(
+    column(
+      width = 12,
+      div(style = "padding: 0px 20px;",
+          DTOutput("table"))
     )
   )
 )
@@ -104,8 +125,8 @@ server <- function(input, output, session) {
     max_year <- ceiling(max(valid_years))
     
     tagList(
-      numericInput("year_min", "Start Year", value = min_year, min = min_year, max = max_year),
-      numericInput("year_max", "End Year", value = max_year, min = min_year, max = max_year)
+      numericInput("year_min", "Start Year (Minimum: -5419)", value = min_year, min = min_year, max = max_year),
+      numericInput("year_max", "End Year (Maximum: 1933)", value = max_year, min = min_year, max = max_year)
     )
   })
   
@@ -159,7 +180,15 @@ server <- function(input, output, session) {
     if (nrow(df) == 0) {
       datatable(data.frame(Message = "No records match the filter criteria."), options = list(dom = 't'))
     } else {
-      datatable(df, options = list(scrollX = TRUE, pageLength = 10))
+      datatable(
+        df,
+        options = list(
+          scrollX = TRUE,
+          autoWidth = TRUE,
+          pageLength = 10
+        ),
+        class = 'display nowrap'
+      )
     }
   })
   
@@ -184,8 +213,7 @@ server <- function(input, output, session) {
   
   output$year_plot <- renderPlot({
     df <- filtered_data() %>%
-      filter(!is.na(Dated_Year), !is.na(Age_Corrected_D14C), !is.na(Age_Corrected_D14C_Error),
-             Dated_Year <= 2025)
+      filter(!is.na(Dated_Year), !is.na(Age_Corrected_D14C))
     
     if (nrow(df) == 0) {
       plot.new()
@@ -206,8 +234,8 @@ server <- function(input, output, session) {
       theme_minimal() +
       labs(
         x = "Dated Year (jittered)",
-        y = "Age-Corrected Δ14C of Tree Ring",
-        title = "Tree Ring Δ14C Levels Over Time"
+        y = "Δ14C (‰)",
+        title = "Δ14C Plot"
       )
     
     if (isTRUE(input$show_errors)) {
