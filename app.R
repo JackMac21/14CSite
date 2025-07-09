@@ -125,15 +125,25 @@ server <- function(input, output, session) {
   })
   
   output$country_ui <- renderUI({
-    selectizeInput("country_value", "Select Country",
-                   choices = sort(na.omit(unique(data_raw$Country))),
-                   multiple = TRUE)
+    tagList(
+      selectizeInput("country_value", "Include Countries",
+                     choices = sort(na.omit(unique(data_raw$Country))),
+                     multiple = TRUE),
+      selectizeInput("country_exclude", "Exclude Countries",
+                     choices = sort(na.omit(unique(data_raw$Country))),
+                     multiple = TRUE)
+    )
   })
   
   output$authors_ui <- renderUI({
-    selectizeInput("authors_value", "Select Authors",
-                   choices = sort(na.omit(unique(data_raw$Author_Year))),
-                   multiple = TRUE)
+    tagList(
+      selectizeInput("authors_value", "Include Authors",
+                     choices = sort(na.omit(unique(data_raw$Author_Year))),
+                     multiple = TRUE),
+      selectizeInput("authors_exclude", "Exclude Authors",
+                     choices = sort(na.omit(unique(data_raw$Author_Year))),
+                     multiple = TRUE)
+    )
   })
   
   output$year_ui <- renderUI({
@@ -168,12 +178,21 @@ server <- function(input, output, session) {
       df <- df %>% filter(EW_LW_WW %in% input$ew_value)
     }
     
-    if (input$use_country && !is.null(input$country_value)) {
-      df <- df %>% filter(Country %in% input$country_value)
+    if (input$use_country) {
+      if (!is.null(input$country_value)) {
+        df <- df %>% filter(Country %in% input$country_value)
+      }
+      if (!is.null(input$country_exclude)) {
+        df <- df %>% filter(!(Country %in% input$country_exclude))
+      }
     }
-    
-    if (input$use_authors && !is.null(input$authors_value)) {
-      df <- df %>% filter(Author_Year %in% input$authors_value)
+    if (input$use_authors) {
+      if (!is.null(input$authors_value)) {
+        df <- df %>% filter(Author_Year %in% input$authors_value)
+      }
+      if (!is.null(input$authors_exclude)) {
+        df <- df %>% filter(!(Author_Year %in% input$authors_exclude))
+      }
     }
     
     if (input$use_year) {
@@ -188,7 +207,6 @@ server <- function(input, output, session) {
                Latitude >= input$lat_range[1], Latitude <= input$lat_range[2],
                Longitude >= input$lon_range[1], Longitude <= input$lon_range[2])
     }
-    
     df
   })
   
@@ -255,7 +273,7 @@ server <- function(input, output, session) {
     SHcal20Curve_Filtered <- SHcal20Curve %>%
       filter(Year >= min_year, Year <= max_year)
     
-    plot <- ggplot(df, aes(x = Jittered_Year, y = Age_Corrected_D14C)) +
+    p <- ggplot(df, aes(x = Jittered_Year, y = Age_Corrected_D14C)) +
       geom_point(alpha = 0.6, color = "darkblue", size = 2) +
       theme_minimal() +
       labs(
@@ -265,22 +283,22 @@ server <- function(input, output, session) {
       )
     
     if (isTRUE(input$show_errors)) {
-      plot <- plot + geom_errorbar(
+      p <- p + geom_errorbar(
         aes(ymin = Age_Corrected_D14C - Age_Corrected_D14C_Error,
             ymax = Age_Corrected_D14C + Age_Corrected_D14C_Error),
         width = 0.1, color = "darkblue", alpha = 0.4
       )
     }
     if (isTRUE(input$show_nh_curve) && nrow(Intcal20Curve_Filtered) > 1) {
-      plot <- plot + geom_line(data = Intcal20Curve_Filtered, aes(x = Year, y = Delta_14C),
+      p <- p + geom_line(data = Intcal20Curve_Filtered, aes(x = Year, y = Delta_14C),
                          color = "red", linewidth = 0.5)
     }
     if (isTRUE(input$show_sh_curve) && nrow(SHcal20Curve_Filtered) > 1) {
-      plot <- plot + geom_line(data = SHcal20Curve_Filtered, aes(x = Year, y = Delta_14C),
+      p <- p + geom_line(data = SHcal20Curve_Filtered, aes(x = Year, y = Delta_14C),
                          color = "green", linewidth = 0.5)
     }
-    plot
-    }
+    p
+  }
   )
   
   output$download_data <- downloadHandler(
