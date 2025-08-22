@@ -30,7 +30,7 @@ data_raw <- data_raw %>%
   )
 
 ui <- fluidPage(
-  titlePanel("14C Data"),
+  titlePanel("Annual Δ14C in Tree Rings"),
   
   fluidRow(
     column(
@@ -69,7 +69,7 @@ ui <- fluidPage(
         
         checkboxInput("show_errors", "Show Error Bars", TRUE),
         
-        checkboxInput("show_nh_curve", "Show IntCal20 Curve", FALSE),
+        checkboxInput("show_nh_curve", "Show IntCal20 Curve", TRUE),
         
         checkboxInput("show_sh_curve", "Show SHCal20 Curve", FALSE),
         
@@ -278,8 +278,8 @@ server <- function(input, output, session) {
       theme_minimal() +
       labs(
         x = "Dated Year (jittered)",
-        y = "Δ14C (‰)",
-        title = "Δ14C Plot"
+        y = "Age Corrected Δ14C (‰)",
+        title = "Δ14C of Individual Tree Ring Samples"
       )
     
     if (isTRUE(input$show_errors)) {
