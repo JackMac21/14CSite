@@ -239,7 +239,7 @@ server <- function(input, output, session) {
       addTiles() %>%
       addMarkers(~Longitude, ~Latitude, clusterOptions = markerClusterOptions(),
                  popup = ~paste(
-                   "<strong>Tree Series:</strong>", Tree_Series, "<br/>",
+                   "<strong>Tree Series ID:</strong>", Tree_Series_ID, "<br/>",
                    "<strong>Species:</strong>", Species, "<br/>",
                    "<strong>Author/Year:</strong>", Author_Year, "<br/>",
                    "<strong>Dated Year:</strong>", Dated_Year
