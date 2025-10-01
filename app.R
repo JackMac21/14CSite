@@ -4,7 +4,7 @@ library(leaflet)
 library(ggplot2)
 library(dplyr)
 
-data_raw <- read.csv("Annual_14C_Database_V2.csv", stringsAsFactors = FALSE)
+data_raw <- read.csv("Annual_14C_Database_V3.csv", stringsAsFactors = FALSE)
 Intcal20Curve <- read.csv("Intcal20Curve.csv", stringsAsFactors = FALSE)
 SHcal20Curve <- read.csv("SHcal20Curve.csv", stringsAsFactors = FALSE)
 
