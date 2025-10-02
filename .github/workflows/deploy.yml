@@ -34,7 +34,8 @@ jobs:
             libtiff5-dev \
             libgdal-dev \
             libgeos-dev \
-            libproj-dev
+            libproj-dev \
+            libudunits2-dev
 
       - name: Install R packages
         run: |
