@@ -21,6 +21,12 @@ jobs:
         with:
           r-version: '4.4.3'
 
+      - name: Check R version
+        run: |
+          R --version
+          Rscript -e "print(R.version.string)"
+          Rscript -e "print(.libPaths())"
+          
       # Install system dependencies
       - name: Install system dependencies
         run: |
@@ -44,12 +50,7 @@ jobs:
       # Install required R packages
       - name: Install R packages
         run: |
-          Rscript -e "install.packages('shiny', repos='https://cloud.r-project.org')"
-          Rscript -e "install.packages('DT', repos='https://cloud.r-project.org')"
-          Rscript -e "install.packages('leaflet', repos='https://cloud.r-project.org')"
-          Rscript -e "install.packages('ggplot2', repos='https://cloud.r-project.org')"
-          Rscript -e "install.packages('dplyr', repos='https://cloud.r-project.org')"
-          Rscript -e "install.packages('rsconnect', repos='https://cloud.r-project.org')"
+          Rscript -e "install.packages(c('shiny', 'DT', 'leaflet', 'ggplot2', 'dplyr', 'rsconnect'), repos='https://cloud.r-project.org', dependencies=TRUE)"
 
       # Verify required packages
       - name: Verify R packages
